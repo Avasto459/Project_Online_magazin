@@ -43,7 +43,7 @@ export function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL("/admin", request.url));
       }
       if (session.role === "DISTRIBUTOR" || session.role === "DEALER") {
-        return NextResponse.redirect(new URL("/distributor/dashboard", request.url));
+        return NextResponse.redirect(new URL("/distributor/orders", request.url));
       }
       // Обычный покупатель (USER) — остаётся на запрашиваемой странице
       return NextResponse.next();

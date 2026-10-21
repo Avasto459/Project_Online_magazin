@@ -15,10 +15,9 @@ export function isAppRole(value: unknown): value is AppRole {
 export function dashboardPathForRole(role?: string | null): string {
   switch (String(role ?? "").toUpperCase()) {
     case "ADMIN": return "/admin";
-    // Дилер и дистрибьютор после входа попадают строго в кабинет /distributor/dashboard.
-    // Рабочий кабинет дилера (/dealer/dashboard) по-прежнему доступен из его меню.
+    // Дилер и дистрибьютор после входа попадают в интерфейс заявок /distributor/orders.
     case "DEALER":
-    case "DISTRIBUTOR": return "/distributor/dashboard";
+    case "DISTRIBUTOR": return "/distributor/orders";
     default: return "/customer/dashboard";
   }
 }
