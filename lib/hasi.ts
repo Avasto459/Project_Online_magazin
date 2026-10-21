@@ -4,6 +4,7 @@ import type { Row } from "@libsql/client";
 import { db } from "@/lib/db/db";
 import { initializeSchema } from "@/lib/db/schema";
 import { StoreError, getSetting, saveActivity, setSetting } from "@/lib/db";
+import { productImageSrc } from "@/lib/product-images";
 import {
   ACCOUNT_STATUSES, CENTRAL_WAREHOUSE_ID, DEALER_COMMISSION_RATE, DEFAULT_DEALER_LIMIT,
   DEFAULT_LIMIT_SETTING_KEY, DEFAULT_MARKUP, HASI_COMMISSION_RATE, round2, type AccountStatus,
@@ -132,9 +133,10 @@ export async function listAvailableProducts(): Promise<AvailableProduct[]> {
     let images: string[] = [];
     try { images = (JSON.parse(str(x.images)) as unknown[]).map(String).filter(Boolean); } catch { /* битый JSON — без галереи */ }
     const service = str(x.type) === "service";
+    const rawImages = images.map(productImageSrc).filter(Boolean);
     return {
       id: str(x.id), name: str(x.name), sku: str(x.sku), brand: str(x.brand), price: num(x.price),
-      stock: service ? null : num(x.qty), image: str(x.image), images, type: service ? "service" : "product", categoryName: str(x.categoryName),
+      stock: service ? null : num(x.qty), image: productImageSrc(str(x.image)), images: rawImages, type: service ? "service" : "product", categoryName: str(x.categoryName),
     };
   });
 }

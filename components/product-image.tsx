@@ -6,16 +6,22 @@ import { DEFAULT_PRODUCT_IMAGE } from "@/lib/product-images";
 
 /** Стандартная картинка-заглушка товара — показывается, когда фото нет или не загрузилось. */
 export function ProductImagePlaceholder({ label = "", compact = false }: { label?: string; compact?: boolean }) {
+  const [failed, setFailed] = useState(false);
   return (
     <div role="img" aria-label="Фотография товара" className={`flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-800/50 ${compact ? "p-1" : "p-3"}`}>
-      <Image
-        src={DEFAULT_PRODUCT_IMAGE}
-        alt="Фото товара"
-        width={600}
-        height={370}
-        unoptimized
-        className={`${compact ? "w-10 h-10" : "w-28 sm:w-32 h-auto"} object-contain opacity-80 dark:opacity-90`}
-      />
+      {failed ? (
+        <div className="flex h-full w-full items-center justify-center text-xs text-slate-400 dark:text-slate-500">Нет фото</div>
+      ) : (
+        <Image
+          src={DEFAULT_PRODUCT_IMAGE}
+          alt="Фото товара"
+          width={600}
+          height={370}
+          unoptimized
+          onError={() => setFailed(true)}
+          className={`${compact ? "w-10 h-10" : "w-28 sm:w-32 h-auto"} object-contain opacity-80 dark:opacity-90`}
+        />
+      )}
       {label && !compact ? <span className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</span> : null}
     </div>
   );
@@ -43,7 +49,7 @@ export function ProductImage({ sources, alt, className = "aspect-square", fit = 
     <div className={`relative w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800/50 ${className}`}>
       {source ? (
         <Image
-          src={source}
+          src={encodeURI(source)}
           alt={alt}
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
@@ -68,7 +74,7 @@ export function ProductThumb({ src, alt = "", size = 96, rounded = "rounded-xl" 
   return (
     <div style={{ width: px, height: px }} className={`relative shrink-0 overflow-hidden border border-slate-100 bg-neutral-100 dark:border-slate-800 dark:bg-neutral-800/50 ${rounded}`}>
       {src && !failed ? (
-        <Image src={src} alt={alt} fill sizes={px} unoptimized onError={() => setFailed(true)} className="object-contain p-1" />
+        <Image src={encodeURI(src)} alt={alt} fill sizes={px} unoptimized onError={() => setFailed(true)} className="object-contain p-1" />
       ) : (
         <ProductImagePlaceholder compact />
       )}

@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/api-auth";
 import { createProduct, getUserById, getUserDisplayName, StoreError } from "@/lib/db";
 import { db } from "@/lib/db/db";
 import { initializeSchema } from "@/lib/db/schema";
-import { DEFAULT_PRODUCT_IMAGE } from "@/lib/product-images";
+import { DEFAULT_PRODUCT_IMAGE, productImageSrc } from "@/lib/product-images";
 
 export const runtime = "nodejs";
 
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     });
     return NextResponse.json({ products: r.rows.map((x) => ({
       id: String(x.id), name: String(x.name), slug: String(x.slug), price: Number(x.price), stock: Number(x.stock),
-      image: String(x.image || ""), isPublished: Number(x.isPublished), createdAt: String(x.createdAt),
+      image: productImageSrc(String(x.image || "")), isPublished: Number(x.isPublished), createdAt: String(x.createdAt),
     })) });
   } catch (error) {
     return fail(error, "Не удалось загрузить товары.");

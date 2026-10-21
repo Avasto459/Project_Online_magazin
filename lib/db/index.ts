@@ -120,20 +120,17 @@ function toAbsoluteImageUrl(raw: unknown): string {
   if (typeof raw !== "string") return DEFAULT_PRODUCT_IMAGE;
   const src = raw.trim();
   if (!src) return DEFAULT_PRODUCT_IMAGE;
-  if (/^https:\/\//i.test(src)) return src;
-  if (/^http:\/\//i.test(src)) return src.replace(/^http:\/\//i, "https://");
-  if (src.startsWith("//")) return `https:${src}`;
+  if (/^https:\/\//i.test(src)) return encodeURI(src);
+  if (/^http:\/\//i.test(src)) return encodeURI(src.replace(/^http:\/\//i, "https://"));
+  if (src.startsWith("//")) return encodeURI(`https:${src}`);
   if (src.startsWith("/")) {
-    // Файлы, загруженные через форму (имя — UUID), лежат локально в /public/uploads/products — оставляем как есть.
-    if (/^\/uploads\/products\/[0-9a-f-]{36}\.(jpe?g|png|webp)$/i.test(src)) return src;
-    // WooCommerce хранит медиа в /wp-content/uploads/...; если в БД лежит
-    // укороченный путь /uploads/..., подставляем wp-content/ между хостом и путём.
+    if (/^\/uploads\/products\/[0-9a-f-]{36}\.(jpe?g|png|webp)$/i.test(src)) return encodeURI(src);
     if (src.startsWith("/uploads/") && !src.startsWith("/wp-content/")) {
-      return `${HASI_IMAGE_HOST}/wp-content${src}`;
+      return encodeURI(`${HASI_IMAGE_HOST}/wp-content${src}`);
     }
-    return `${HASI_IMAGE_HOST}${src}`;
+    return encodeURI(`${HASI_IMAGE_HOST}${src}`);
   }
-  if (/^[a-z0-9-]+\.[a-z]{2,}\//i.test(src)) return `https://${src}`;
+  if (/^[a-z0-9-]+\.[a-z]{2,}\//i.test(src)) return encodeURI(`https://${src}`);
   return DEFAULT_PRODUCT_IMAGE;
 }
 
@@ -167,7 +164,7 @@ export async function createProduct(p:{slug:string;name:string;shortDescription?
   const id=randomUUID();
   const type:ItemType=p.type==="service"?"service":"product";
   const stock=type==="service"?SERVICE_VIRTUAL_STOCK:(p.stock||0);
-  await db.execute({sql:`INSERT INTO products(id,slug,name,shortDescription,description,sku,brand,images,specifications,price,previousPrice,image,sourceUrl,categoryId,featured,rating,stock,isPublished,type,distributor_id,distributor_name,createdAt) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,args:[id,p.slug,p.name,p.shortDescription||"",p.description||p.shortDescription||"",p.sku||"",p.brand||"",JSON.stringify(p.images||[]),JSON.stringify(p.specifications||{}),p.price,p.previousPrice??null,p.image||p.images?.[0]||"",p.sourceUrl||"",p.categoryId,p.featured||0,p.rating||0,stock,p.isPublished===0?0:1,type,p.distributorId||null,p.distributorName||null,now()]});
+  await db.execute({sql:`INSERT INTO products(id,slug,name,shortDescription,description,sku,brand,images,specifications,price,previousPrice,image,sourceUrl,categoryId,featured,rating,stock,isPublished,type,distributor_id,distributor_name,createdAt) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,args:[id,p.slug,p.name,p.shortDescription||"",p.description||p.shortDescription||"",p.sku||"",p.brand||"",JSON.stringify(p.images||[]),JSON.stringify(p.specifications||{}),p.price,p.previousPrice??null,p.image||p.images?.[0]||DEFAULT_PRODUCT_IMAGE,p.sourceUrl||"",p.categoryId,p.featured||0,p.rating||0,stock,p.isPublished===0?0:1,type,p.distributorId||null,p.distributorName||null,now()]});
   return getProductById(id);
 }
 export async function updateProductById(id:string,p:Partial<Product>){await ready();const map:any={slug:p.slug,name:p.name,shortDescription:p.shortDescription,description:p.description,sku:p.sku,brand:p.brand,images:p.images?JSON.stringify(p.images):undefined,specifications:p.specifications?JSON.stringify(p.specifications):undefined,price:p.price,previousPrice:p.previousPrice,image:p.image,sourceUrl:p.sourceUrl,categoryId:p.categoryId,featured:p.featured,rating:p.rating,stock:p.type==="service"?SERVICE_VIRTUAL_STOCK:p.stock,isPublished:p.isPublished,type:p.type===undefined?undefined:(p.type==="service"?"service":"product")};const s:string[]=[];const a:any[]=[];for(const [k,v] of Object.entries(map))if(v!==undefined){s.push(`${k}=?`);a.push(v)}if(s.length){a.push(id);await db.execute({sql:`UPDATE products SET ${s.join(",")} WHERE id=?`,args:a})}return getProductById(id)}
