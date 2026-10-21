@@ -36,10 +36,17 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
-  // --- главная: дистрибьютор/дилер публичную витрину не видит ---
-  if (pathname === "/") {
-    if (session && (session.role === "DISTRIBUTOR" || session.role === "DEALER")) {
-      return NextResponse.redirect(new URL("/distributor/dashboard", request.url));
+  // --- главная и логин: авторизованные партнёры/админ не видят публичную витрину ---
+  if (pathname === "/" || pathname === "/login") {
+    if (session) {
+      if (session.role === "ADMIN" || isPrimaryAdminEmail(session.email)) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
+      if (session.role === "DISTRIBUTOR" || session.role === "DEALER") {
+        return NextResponse.redirect(new URL("/distributor/dashboard", request.url));
+      }
+      // Обычный покупатель (USER) — остаётся на запрашиваемой странице
+      return NextResponse.next();
     }
     return NextResponse.next();
   }
@@ -71,6 +78,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
+    "/login",
     "/admin/:path*",
     "/api/admin/:path*",
     "/dealer/:path*",

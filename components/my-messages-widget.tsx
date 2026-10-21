@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Send, X, LoaderCircle } from "lucide-react";
+import { ExternalLink, MessageCircle, Send, X, LoaderCircle } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +15,9 @@ const GUEST_NAME_KEY = "hasi-chat-guest-name";
 const GUEST_PHONE_KEY = "hasi-chat-guest-phone";
 const SENT_EVENT = "hasi:contact-sent";
 const POLL_MS = 5000;
+/** Прямые ссылки для перехода в мессенджеры в 1 клик. */
+const WHATSAPP_URL = "https://wa.me/992933335111?text=Здравствуйте!%20Пишу%20с%20сайта%20HASI.TJ";
+const TELEGRAM_URL = "https://t.me/992933335111";
 function readJson<T>(key: string, fallback: T): T {
   try { return (JSON.parse(localStorage.getItem(key) || "null") ?? fallback) as T; } catch { return fallback; }
 }
@@ -128,7 +131,15 @@ export function MyMessagesWidget() {
           {error ? <p role="alert" className="text-xs text-rose-600">{error}</p> : null}{success ? <p role="status" className="text-xs text-emerald-600">{success}</p> : null}
         </form>
       </section> : null}
-      <button type="button" onClick={toggle} aria-label={buttonLabel} aria-expanded={open} className="relative ml-auto flex h-14 w-14 items-center justify-center rounded-full bg-violet-700 text-white shadow-lg ring-4 ring-violet-700/15 transition hover:scale-105 hover:bg-violet-600 active:scale-95"><MessageCircle className="h-6 w-6"/>{unread > 0 ? <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[11px] font-bold">{unread}</span> : null}</button>
+      <div className="flex flex-col items-end gap-2">
+        {!open && (
+          <>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Написать в WhatsApp" className="flex items-center gap-2 rounded-full bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold shadow-lg hover:bg-emerald-600 transition"><span>WhatsApp</span><ExternalLink className="h-3.5 w-3.5" /></a>
+            <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Написать в Telegram" className="flex items-center gap-2 rounded-full bg-blue-500 text-white px-3 py-1.5 text-xs font-bold shadow-lg hover:bg-blue-600 transition"><span>Telegram</span><ExternalLink className="h-3.5 w-3.5" /></a>
+          </>
+        )}
+        <button type="button" onClick={toggle} aria-label={buttonLabel} aria-expanded={open} className="relative flex h-14 w-14 items-center justify-center rounded-full bg-violet-700 text-white shadow-lg ring-4 ring-violet-700/15 transition hover:scale-105 hover:bg-violet-600 active:scale-95"><MessageCircle className="h-6 w-6"/>{unread > 0 ? <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[11px] font-bold">{unread}</span> : null}</button>
+      </div>
     </div>
   );
 }

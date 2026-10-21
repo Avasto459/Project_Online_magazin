@@ -1,6 +1,9 @@
+/** Публичная тестовая заглушка, показывается когда у товара нет фото. */
+export const DEFAULT_PRODUCT_IMAGE = "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80";
+
 export function productImageSrc(source: string) {
   const value = source.trim();
-  if (!value) return "";
+  if (!value) return DEFAULT_PRODUCT_IMAGE;
   if (/^(https?:\/\/|data:image\/|blob:)/i.test(value)) return value;
   // Локальные статичные ассеты проекта (SVG-заглушки /products/*.svg и /hasi-logo.png
   // лежат в public/ и раздаются самим Next.js) — оставляем как есть.

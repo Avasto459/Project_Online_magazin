@@ -2,13 +2,21 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { DEFAULT_PRODUCT_IMAGE } from "@/lib/product-images";
 
-/** Заглушка с логотипом HASI — показывается, когда фото нет или оно не загрузилось. */
-export function ProductImagePlaceholder({ label = "Фото скоро появится", compact = false }: { label?: string; compact?: boolean }) {
+/** Стандартная картинка-заглушка товара — показывается, когда фото нет или не загрузилось. */
+export function ProductImagePlaceholder({ label = "", compact = false }: { label?: string; compact?: boolean }) {
   return (
-    <div role="img" aria-label="Фотография товара отсутствует" className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 via-white to-violet-50 text-slate-400 dark:from-slate-800 dark:via-slate-900 dark:to-violet-950/40">
-      <Image src="/hasi-logo.png" alt="" width={600} height={370} unoptimized className={`${compact ? "w-10" : "w-28 sm:w-32"} h-auto opacity-60 grayscale dark:opacity-80`} />
-      {compact ? null : <span className="text-xs font-medium tracking-wide">{label}</span>}
+    <div role="img" aria-label="Фотография товара" className={`flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-800/50 ${compact ? "p-1" : "p-3"}`}>
+      <Image
+        src={DEFAULT_PRODUCT_IMAGE}
+        alt="Фото товара"
+        width={600}
+        height={370}
+        unoptimized
+        className={`${compact ? "w-10 h-10" : "w-28 sm:w-32 h-auto"} object-contain opacity-80 dark:opacity-90`}
+      />
+      {label && !compact ? <span className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</span> : null}
     </div>
   );
 }

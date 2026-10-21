@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/api-auth";
 import { createProduct, getUserById, getUserDisplayName, StoreError } from "@/lib/db";
 import { db } from "@/lib/db/db";
 import { initializeSchema } from "@/lib/db/schema";
+import { DEFAULT_PRODUCT_IMAGE } from "@/lib/product-images";
 
 export const runtime = "nodejs";
 
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
     if (!Number.isSafeInteger(price) || price < 0) throw new StoreError("Цена должна быть целым неотрицательным числом.", 400);
     if (!Number.isSafeInteger(stock) || stock < 0) throw new StoreError("Количество должно быть целым неотрицательным числом.", 400);
     const description = text("description").slice(0, 5000);
+    const imageUrl = text("imageUrl");
 
     const files = form.getAll("images").filter((v): v is File => v instanceof File && v.size > 0);
     if (files.length > MAX_FILES) throw new StoreError(`Можно загрузить не более ${MAX_FILES} фотографий.`, 400);
@@ -104,6 +106,8 @@ export async function POST(request: Request) {
         await writeFile(path.join(folder, filename), data, { flag: "wx" });
         images.push(`/uploads/products/${filename}`);
       }
+    } else if (imageUrl) {
+      images.push(imageUrl);
     }
 
     const product = await createProduct({
@@ -115,7 +119,7 @@ export async function POST(request: Request) {
       price,
       stock,
       images,
-      image: images[0] || "",
+      image: images[0] || imageUrl || DEFAULT_PRODUCT_IMAGE,
       categoryId,
       type: "product",
       // Привязка к дистрибьютору: ID и имя текущего пользователя.

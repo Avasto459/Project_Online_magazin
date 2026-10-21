@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { createHash, createHmac, randomBytes, randomInt, randomUUID, timingSafeEqual } from "crypto";
 import { getCodeSecret, signToken } from "@/lib/auth";
 import { normalizeTajikPhone } from "@/lib/phone";
+import { DEFAULT_PRODUCT_IMAGE } from "@/lib/product-images";
 import { db, databaseMode, usingTurso } from "./db";
 import { initializeDatabase } from "./seed";
 
@@ -116,9 +117,9 @@ const HASI_IMAGE_HOST = "https://hasi.tj";
  *  /uploads/products/abc.jpg → https://hasi.tj/wp-content/uploads/products/abc.jpg
  *  Уже полные URL оставляет без изменений. */
 function toAbsoluteImageUrl(raw: unknown): string {
-  if (typeof raw !== "string") return "";
+  if (typeof raw !== "string") return DEFAULT_PRODUCT_IMAGE;
   const src = raw.trim();
-  if (!src) return "";
+  if (!src) return DEFAULT_PRODUCT_IMAGE;
   if (/^https:\/\//i.test(src)) return src;
   if (/^http:\/\//i.test(src)) return src.replace(/^http:\/\//i, "https://");
   if (src.startsWith("//")) return `https:${src}`;
@@ -133,14 +134,16 @@ function toAbsoluteImageUrl(raw: unknown): string {
     return `${HASI_IMAGE_HOST}${src}`;
   }
   if (/^[a-z0-9-]+\.[a-z]{2,}\//i.test(src)) return `https://${src}`;
-  return "";
+  return DEFAULT_PRODUCT_IMAGE;
 }
 
 function mapProduct(x: Record<string, unknown>): Product {
   const images = parseJson<string[]>(x.images, []).map(toAbsoluteImageUrl).filter(Boolean);
+  const mainImage = toAbsoluteImageUrl(x.image);
+  const hasRealMainImage = Boolean(mainImage) && mainImage !== DEFAULT_PRODUCT_IMAGE;
   return {
     ...x,
-    image: toAbsoluteImageUrl(x.image) || (images[0] || ""),
+    image: hasRealMainImage ? mainImage : (images[0] || DEFAULT_PRODUCT_IMAGE),
     images,
     specifications: parseJson<Record<string, string>>(x.specifications, {}),
     price: Number(x.price),

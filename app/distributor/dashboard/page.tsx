@@ -2,7 +2,6 @@ import { SiteShell } from "@/components/site-shell";
 import { Card, DashboardHeader, Field } from "@/components/dashboard-ui";
 import { requireRole } from "@/lib/server-session";
 import { getDistributorView } from "@/lib/hasi";
-import { DistributorProductForm } from "@/components/distributor-product-form";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +19,6 @@ export default async function DistributorDashboardPage() {
         {account.role === "DEALER" ? (
           <Link href="/dealer/dashboard" className="inline-flex rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500">Перейти в кабинет дилера (заявки)</Link>
         ) : null}
-        <DistributorProductForm />
         <Card title="Мои склады">
           {!view || view.warehouses.length === 0 ? (
             <p className="text-sm text-slate-500">Склады ещё не назначены. Обратитесь к администратору HASI.</p>
